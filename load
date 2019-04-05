@@ -1,0 +1,69 @@
+bool load(const char *dictionary)
+{
+    // Initialize trie
+    root = malloc(sizeof(node));
+    if (root == NULL)
+    {
+        return false;
+    }
+    root->is_word = false;
+    for (int i = 0; i < N; i++)
+    {
+        root->children[i] = NULL;
+    }
+
+    // Open dictionary
+    FILE *file = fopen(dictionary, "r");
+    if (file == NULL)
+    {
+        unload();
+        return false;
+    }
+
+    // Buffer for a word
+    char word[LENGTH + 1];
+
+    // Insert words into trie
+    while (fscanf(file, "%s", word) != EOF)
+    {
+        //create traveral pointer and set it to root
+        //needs to be for every word scanned in so that trav node is set back to root
+        struct node *trav = root;
+        int wordlength = strlen(word);
+        int index;
+
+        //iterate over each letter in word
+        for (int i = 0; i < wordlength; i++)
+        {
+            //if i'th element in word array is a letter...
+            //find index value and set it to 0 to 26 depending on letter, a being 0
+            if (isalpha(word[i]))
+            {
+                index = tolower(word[i]) - 'a';
+            }
+            //else if character is an apostrophe, set index to 26 as last element it's the last element possible in array
+            else if (word[i] == '\'')
+            {
+                index = 26;
+            }
+            //if trav->children[index] does not exist, allocate memory for trav
+            if (!trav->children[index])
+            {
+                node *newnode = malloc(sizeof(node));
+                trav->children[index] = newnode;
+            }
+            //set trav pointer at children index position to trav pointer if previous condition does not pass (node already exists in children array)
+            trav->children[index] = trav;
+        }
+        //set leaf node is_word value to true after iterating through each letter
+        trav->is_word = true;
+        //iterate wordCount by 1 to signify a word found/added
+        wordCounter++;
+    }
+
+    // Close dictionary
+    fclose(file);
+
+    // Indicate success
+    return true;
+}
